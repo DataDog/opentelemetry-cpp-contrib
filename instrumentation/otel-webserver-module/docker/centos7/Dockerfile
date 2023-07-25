@@ -163,7 +163,7 @@ RUN yum install perl-Thread-Queue.noarch -y \
     && ./Configure -des -Dprefix=$HOME/localperl \
     && make \
     && make test; echo 0 \
-    && make install 
+    && make install
 ENV PATH=$HOME/localperl/bin:$PATH
 
 # install autoconf
@@ -259,9 +259,9 @@ RUN mkdir build-dependencies \
     && mv -f httpd-2.4.23 build-dependencies
 
 # install nginx
-RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
-    && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
-    && rm -rf nginx-${NGINX_VERSION}.tar.gz
+# RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+#     && tar -xvf nginx-${NGINX_VERSION}.tar.gz -C /build-dependencies \
+#     && rm -rf nginx-${NGINX_VERSION}.tar.gz
 
 # Build Webserver Module
 COPY . /otel-webserver-module
@@ -269,14 +269,14 @@ COPY . /otel-webserver-module
 RUN cp -r /dependencies /otel-webserver-module/ \
     && cp -r /build-dependencies /otel-webserver-module/ \
     && cd otel-webserver-module \
-    && ./gradlew assembleWebServerModule 
+    && ./gradlew assembleWebServerModule
 
-RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
-    && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
-    && echo 'baseurl=https://nginx.org/packages/centos/7/x86_64' >> /etc/yum.repos.d/nginx.repo \
-    && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \ 
-    && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
-    && yum install nginx-${NGINX_VERSION} -y
+# RUN echo '[nginx]' >> /etc/yum.repos.d/nginx.repo \
+#     && echo 'name=nginx repo' >> /etc/yum.repos.d/nginx.repo \
+#     && echo 'baseurl=https://nginx.org/packages/centos/7/x86_64' >> /etc/yum.repos.d/nginx.repo \
+#     && echo 'gpgcheck=0' >> /etc/yum.repos.d/nginx.repo \
+#     && echo 'enabled=1' >> /etc/yum.repos.d/nginx.repo \
+#     && yum install nginx-${NGINX_VERSION} -y
 
 RUN cd /otel-webserver-module/build \
     && tar -xf opentelemetry-webserver-sdk-x64-linux.tgz \
@@ -285,14 +285,15 @@ RUN cd /otel-webserver-module/build \
     && cp opentelemetry_module.conf /etc/httpd/conf/ \
     && sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/httpd/conf/opentelemetry_module.conf \
     && echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf \
+    && sed -i 's/LogLevel warn/LogLevel debug/' /etc/httpd/conf/httpd.conf \
     && cd /opt/opentelemetry-webserver-sdk \
     && ./install.sh \
     && cd /
 
-RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
-    && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.22.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
-    && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \ 
-    && cd /
+# RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
+#     && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.22.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
+#     && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \
+#     && cd /
 
 # Remove unwanted files
 RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-x86_64 \

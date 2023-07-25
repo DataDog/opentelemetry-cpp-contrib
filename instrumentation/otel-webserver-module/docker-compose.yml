@@ -3,18 +3,18 @@ networks:
     default:
         name: webserver-network
 services:
-    webserver_centos:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        image: apache_centos
-        profiles:
-            - default
-        hostname: webserver
-        container_name: webserver_centos
-        command: bash -c " httpd -k start && tail -f /dev/null "
-        ports:
-            - "8000:80"
+#     webserver_centos:
+#         build:
+#             context: .
+#             dockerfile: Dockerfile
+#         image: apache_centos
+#         profiles:
+#             - default
+#         hostname: webserver
+#         container_name: webserver_centos
+#         command: bash -c " httpd -k start && tail -f /dev/null "
+#         ports:
+#             - "8000:80"
     webserver_centos7:
         build:
             context: .
@@ -28,98 +28,115 @@ services:
         ports:
             - "9004:80"
         depends_on:
-            - otel-collector
-    webserver_ubuntu:
-        build:
-            context: .
-            dockerfile: docker/ubuntu20.04/Dockerfile
-        image: apache_ubuntu
-        hostname: webserver
-        container_name: webserver_ubuntu
-        command: bash -c "apache2ctl -k start && tail -f /dev/null "
-        profiles:
-            - ubuntu20.04
-        ports:
-            - "9000:80"
-        depends_on:
-            - otel-collector
-    nginx_centos:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        image: nginx_centos
-        hostname: webserver
-        container_name: nginx_centos
-        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
-        profiles:
-            - centos_nginx
-        ports:
-            - "8008:80"
-        depends_on:
-            - otel-collector
-    nginx_centos7:
-        build:
-            context: .
-            dockerfile: docker/centos7/Dockerfile
-        image: nginx_centos7
-        hostname: webserver
-        container_name: nginx_centos7
-        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
-        profiles:
-            - centos7_nginx
-        ports:
-            - "8012:80"
-        depends_on:
-            - otel-collector
-    nginx_ubuntu:
-        build:
-            context: .
-            dockerfile: docker/ubuntu20.04/Dockerfile
-        image: nginx_ubuntu
-        hostname: webserver
-        container_name: nginx_ubuntu
-        command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
-        profiles:
-            - ubuntu20.04_nginx
-        ports:
-            - "8016:80"
-        depends_on:
-            - otel-collector
+#             - otel-collector
+            - datadog-agent
+#     webserver_ubuntu:
+#         build:
+#             context: .
+#             dockerfile: docker/ubuntu20.04/Dockerfile
+#         image: apache_ubuntu
+#         hostname: webserver
+#         container_name: webserver_ubuntu
+#         command: bash -c "apache2ctl -k start && tail -f /dev/null "
+#         profiles:
+#             - ubuntu20.04
+#         ports:
+#             - "9000:80"
+#         depends_on:
+#             - otel-collector
+#     nginx_centos:
+#         build:
+#             context: .
+#             dockerfile: Dockerfile
+#         image: nginx_centos
+#         hostname: webserver
+#         container_name: nginx_centos
+#         command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+#         profiles:
+#             - centos_nginx
+#         ports:
+#             - "8008:80"
+#         depends_on:
+#             - otel-collector
+#     nginx_centos7:
+#         build:
+#             context: .
+#             dockerfile: docker/centos7/Dockerfile
+#         image: nginx_centos7
+#         hostname: webserver
+#         container_name: nginx_centos7
+#         command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+#         profiles:
+#             - centos7_nginx
+#         ports:
+#             - "8012:80"
+#         depends_on:
+#             - otel-collector
+#     nginx_ubuntu:
+#         build:
+#             context: .
+#             dockerfile: docker/ubuntu20.04/Dockerfile
+#         image: nginx_ubuntu
+#         hostname: webserver
+#         container_name: nginx_ubuntu
+#         command: bash -c "export LD_LIBRARY_PATH=/opt/opentelemetry-webserver-sdk/sdk_lib/lib && nginx && tail -f /dev/null"
+#         profiles:
+#             - ubuntu20.04_nginx
+#         ports:
+#             - "8016:80"
+#         depends_on:
+#             - otel-collector
 
 
 # Collector
-    otel-collector:
-        image: otel/opentelemetry-collector:latest
-        container_name: collector
+#     otel-collector:
+#         image: otel/opentelemetry-collector:latest
+#         container_name: collector
+#         profiles:
+#             - default
+#             - ubuntu20.04
+#             - centos7
+#             - centos_nginx
+#             - centos7_nginx
+#             - ubuntu20.04_nginx
+#         command: ["--config=/etc/otel-config.yml"]
+#         volumes:
+#             - ./otel-config.yml:/etc/otel-config.yml
+#         ports:
+#             - "4317:4317" # grpc
+#             - "55678:55678"
+#             - "55679:55679"
+#         depends_on:
+#             - zipkin
+
+# The Datadog trace agent
+    datadog-agent:
+        image: datadog/agent
         profiles:
-            - default
-            - ubuntu20.04
             - centos7
-            - centos_nginx
-            - centos7_nginx
-            - ubuntu20.04_nginx
-        command: ["--config=/etc/otel-config.yml"]
         volumes:
-            - ./otel-config.yml:/etc/otel-config.yml
-        ports:
-            - "4317:4317" # grpc
-            - "55678:55678"
-            - "55679:55679"
-        depends_on:
-            - zipkin
+            - '/var/run/docker.sock:/var/run/docker.sock:ro'
+            - '/proc/:/host/proc/:ro'
+            - '/sys/fs/cgroup/:/host/sys/fs/cgroup:ro'
+        environment:
+            - DD_API_KEY
+            - DD_APM_ENABLED=true
+            - DD_LOG_LEVEL=ERROR
+#             - DD_LOG_LEVEL=INFO
+            - DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT=0.0.0.0:4317
 
 # Zipkin
-    zipkin:
-        image: openzipkin/zipkin:latest
-        container_name: zipkin
-        profiles:
-            - default
-            - ubuntu20.04
-            - centos7
-            - centos_nginx
-            - centos7_nginx
-            - ubuntu20.04_nginx
-        ports:
-            - "9411:9411"
-            - "9410:9410"
+#     zipkin:
+#         image: openzipkin/zipkin:latest
+#         container_name: zipkin
+#         profiles:
+#             - default
+#             - ubuntu20.04
+#             - centos7
+#             - centos_nginx
+#             - centos7_nginx
+#             - ubuntu20.04_nginx
+#         ports:
+#             - "9411:9411"
+#             - "9410:9410"
 
