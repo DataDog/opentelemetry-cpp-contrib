@@ -4,7 +4,6 @@ PS4='@ECHO@ line $LINENO: '
 set -x
 set -e
 
-# export GOSU_ARCH=amd64
 export JDK_ARCH=x64
 
 PYTHON_VERSION="2.7.8"
@@ -23,13 +22,7 @@ LIBTOOL_VERSION="2.4.6"
 LOG4CXX_VERSION="0.11.0"
 GTEST_VERSION="1.10.0"
 AUTOMAKE_VERSION="1.16.3"
-PERL_VERSION="5.20.2"
-PERL_CPANVERSION="5.0"
 PCRE_VERSION="8.44"
-# NGINX_VERSION="1.22.0"
-
-echo '!!!!!!!!!! BEGIN SKIP !!!!!!!!!!!!'
-cat <<'END_SKIP'
 
 # install required packages
 sudo yum update -y
@@ -124,23 +117,6 @@ cd ../ && rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSIO
 
 # install m4 and perl-Data-Dumper
 sudo yum install -y m4 perl-Data-Dumper
-
-# Update perl version
-# TODO: `make test` was failing and I couldn't figure it out.
-# Might have something to do with the version of gcc,
-# or ./Configure choosing the wrong version.
-# For now, I'll use the package manager's perl (5.16.3) and hope that it's
-# enough.
-#
-# sudo yum install perl-Thread-Queue.noarch -y
-# wget http://www.cpan.org/src/${PERL_CPANVERSION}/perl-${PERL_VERSION}.tar.gz
-# tar -xzf perl-${PERL_VERSION}.tar.gz
-# cd perl-${PERL_VERSION}
-# ./Configure -des -Dprefix=$HOME/localperl
-# make -j 4
-# make test
-# make install
-# export PATH=$HOME/localperl/bin:$PATH
 
 # install autoconf
 wget --no-check-certificate https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz
@@ -252,9 +228,6 @@ wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.23.ta
 tar -xf httpd-2.4.23.tar.gz
 mv -f httpd-2.4.23 build-dependencies
 
-END_SKIP
-echo '!!!!!!!!!! END SKIP !!!!!!!!!!!!'
-
 # build webserver module
 ./gradlew assembleWebServerModule
 cd build
@@ -263,27 +236,6 @@ sudo mv -f opentelemetry-webserver-sdk /opt/
 cd ../
 sudo cp opentelemetry_module.conf /etc/httpd/conf/
 sudo sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/httpd/conf/opentelemetry_module.conf
-# TODO: not yet: echo 'Include conf/opentelemetry_module.conf' >> /etc/httpd/conf/httpd.conf
-# TODO: nah: sed -i 's/LogLevel warn/LogLevel debug/' /etc/httpd/conf/httpd.conf
+printf '\n# OpenTelemetry\nInclude conf/opentelemetry_module.conf\n' | sudo tee --append /etc/httpd/conf/httpd.conf >/dev/null
 cd /opt/opentelemetry-webserver-sdk
 ./install.sh
-# TODO: cd back to working directory
-
-# Remaining stuff from the Dockerfile
->/dev/null cat <<'END_DOCKERFILE'
-
-# RUN cp /otel-webserver-module/conf/nginx/opentelemetry_module.conf /opt/ \
-#     && sed -i '8i load_module /opt/opentelemetry-webserver-sdk/WebServerModule/Nginx/1.22.0/ngx_http_opentelemetry_module.so;' /etc/nginx/nginx.conf \
-#     && sed -i '33i include /opt/opentelemetry_module.conf;' /etc/nginx/nginx.conf \
-#     && cd /
-
-# Remove unwanted files
-RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-x86_64 \
-    && rm -rf libtool-${LIBTOOL_VERSION} && rm -rf Python-${PYTHON_VERSION} \
-    && rm -f apr-${APR_VERSION}.tar.gz && rm -f apr-util-${APRUTIL_VERSION}.tar.gz \
-    && rm -f httpd-2.2.31.tar.gz && rm -f httpd-2.4.23.tar.gz
-
-COPY entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["entrypoint.sh"]
-END_DOCKERFILE
-
