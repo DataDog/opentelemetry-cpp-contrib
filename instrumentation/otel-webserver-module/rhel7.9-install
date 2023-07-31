@@ -24,6 +24,32 @@ GTEST_VERSION="1.10.0"
 AUTOMAKE_VERSION="1.16.3"
 PCRE_VERSION="8.44"
 
+# get sudo permission and maintain it for the duration of this script.
+# This way, long-running commands won't cause us to lose sudo permission,
+# which could then cause the script to block on the next `sudo`.
+sukeep_dir=$(mktemp -d)
+
+on_exit() {
+    set +x
+    touch "$sukeep_dir/done"
+    wait "$(cat "$sukeep_dir/pid")"
+    rm -r "$sukeep_dir"
+}
+
+trap on_exit EXIT
+
+poll_sudo() {
+    set +x
+    while ! [ -f "$sukeep_dir/done" ]; do
+        sudo -v
+        sleep 1
+    done
+}
+
+sudo -v
+poll_sudo &
+printf '%d' "$!" >"$sukeep_dir/pid"
+
 # install required packages
 sudo yum update -y
 sudo yum install wget -y
@@ -171,7 +197,7 @@ git clone https://github.com/open-telemetry/opentelemetry-cpp
 cd opentelemetry-cpp/
 git checkout tags/v${OPENTELEMETRY_VERSION} -b v${OPENTELEMETRY_VERSION}
 git submodule update --init --recursive
-mkdir build
+mkdir -p build
 cd build
 cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}
 cmake --build -j 4 . --target all
@@ -194,7 +220,7 @@ mkdir -p dependencies/googletest/${GTEST_VERSION}/
 wget https://github.com/google/googletest/archive/refs/tags/release-${GTEST_VERSION}.tar.gz --no-check-certificate
 tar -xf release-${GTEST_VERSION}.tar.gz
 cd googletest-release-${GTEST_VERSION}/
-mkdir build && cd build
+mkdir -p build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${DEPS}/googletest/${GTEST_VERSION}/
 make -j 4
 make install
@@ -214,7 +240,7 @@ rm -rf ${PCRE_VERSION}.tar.gz
 rm -rf pcre-${PCRE_VERSION}
 
 #Installing Apache and apr source code
-mkdir build-dependencies
+mkdir -p build-dependencies
 wget --no-check-certificate https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz
 tar -xf apr-${APR_VERSION}.tar.gz
 mv -f apr-${APR_VERSION} build-dependencies
@@ -232,10 +258,11 @@ mv -f httpd-2.4.23 build-dependencies
 ./gradlew assembleWebServerModule
 cd build
 tar -xf opentelemetry-webserver-sdk-x64-linux.tgz
-sudo mv -f opentelemetry-webserver-sdk /opt/
-cd ../
-sudo cp opentelemetry_module.conf /etc/httpd/conf/
-sudo sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/httpd/conf/opentelemetry_module.conf
-printf '\n# OpenTelemetry\nInclude conf/opentelemetry_module.conf\n' | sudo tee --append /etc/httpd/conf/httpd.conf >/dev/null
-cd /opt/opentelemetry-webserver-sdk
-./install.sh
+# TODO: What follows is the installation process.
+# sudo mv -f opentelemetry-webserver-sdk /opt/
+# cd ../
+# sudo cp opentelemetry_module.conf /etc/httpd/conf/
+# sudo sed -i "s/libmod_apache_otel22.so/libmod_apache_otel.so/g" /etc/httpd/conf/opentelemetry_module.conf
+# printf '\n# OpenTelemetry\nInclude conf/opentelemetry_module.conf\n' | sudo tee --append /etc/httpd/conf/httpd.conf >/dev/null
+# cd /opt/opentelemetry-webserver-sdk
+# ./install.sh
