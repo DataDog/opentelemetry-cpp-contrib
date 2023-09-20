@@ -1,0 +1,311 @@
+#!/bin/sh
+
+PS4='@ECHO@ line $LINENO: '
+set -x
+set -e
+
+export JDK_ARCH=x64
+
+# PYTHON_VERSION="2.7.8"
+CMAKE_VERSION="3.20"
+CMAKE_0VERSION="3.20.0"
+GRPC_VERSION="1.36.4"
+OPENTELEMETRY_VERSION="1.2.0"
+BOOST_VERSION="1.75.0"
+BOOST_FILENAME="boost_1_75_0"
+# APR_VERSION="1.7.0"
+EXPAT_VERSION="2.3.0"
+EXPAT_RVERSION="R_2_3_0"
+# APRUTIL_VERSION="1.6.1"
+AUTOCONF_VERSION="2.68"
+LIBTOOL_VERSION="2.4.6"
+LOG4CXX_VERSION="0.11.0"
+GTEST_VERSION="1.10.0"
+AUTOMAKE_VERSION="1.16.3"
+PCRE_VERSION="8.44"
+
+# get sudo permission and maintain it for the duration of this script.
+# This way, long-running commands won't cause us to lose sudo permission,
+# which could then cause the script to block on the next `sudo`.
+sukeep_dir=$(mktemp -d)
+
+on_exit() {
+    set +x
+    touch "$sukeep_dir/done"
+    wait "$(cat "$sukeep_dir/pid")"
+    rm -r "$sukeep_dir"
+}
+
+trap on_exit EXIT
+
+poll_sudo() {
+    set +x
+    while ! [ -f "$sukeep_dir/done" ]; do
+        sudo -v
+        sleep 1
+    done
+}
+
+sudo -v
+poll_sudo &
+printf '%d' "$!" >"$sukeep_dir/pid"
+
+# install required packages
+sudo yum update -y
+sudo yum install -y wget zlib-devel openssl-devel java-1.8.0-openjdk pcre-devel xz httpd python2
+
+# Download a specified file using wget, if necessary.
+# The URL must be the first argument.
+# Any options are forwarded to wget, along with "--no-check-certificate".
+download() {
+    url=$1
+    shift
+    file=${url##*/}
+    if ! [ -f "$file" ]; then
+        wget --no-check-certificate "$@" "$url"
+    fi
+}
+
+# RHEL 7 way:
+# install the C++ build toolchain
+# sudo yum install yum-utils -y
+# sudo yum-config-manager --enable rhel-server-rhscl-7-rpms -y
+# sudo yum install devtoolset-7 -y
+# export PATH="/opt/rh/devtoolset-7/root/usr/bin:${PATH}"
+
+# RHEL 8 has a different package structure.
+# Use `yum group install` to install C++ toolchain, instead of using optional
+# package repositories.
+sudo yum group install -y "Development Tools"
+
+# gyp (used below) requires Pyhotn 2.7
+# install python 2.7.8
+# if ! [ -d Python-${PYTHON_VERSION} ]; then
+#     wget http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz
+#     unxz Python-${PYTHON_VERSION}.tar.xz
+#     tar -xf Python-${PYTHON_VERSION}.tar
+# fi
+# cd Python-${PYTHON_VERSION}
+# ./configure --prefix=/usr/local
+# make -j "$(nproc)"
+# sudo make install
+# cd ..
+
+# install cmake
+if ! [ -d cmake-${CMAKE_0VERSION}-linux-x86_64 ]; then
+    download https://cmake.org/files/v${CMAKE_VERSION}/cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz
+    tar -xvf cmake-${CMAKE_0VERSION}-linux-x86_64.tar.gz
+fi
+cd cmake-${CMAKE_0VERSION}-linux-x86_64
+sudo cp -rf * /usr/local/
+cd ..
+
+# install grpc. If planning to upgrade, make sure sed command works
+if ! [ -d grpc/.git ]; then
+    git clone https://github.com/grpc/grpc
+fi
+cd grpc
+git checkout tags/v${GRPC_VERSION} # -b v${GRPC_VERSION}
+git submodule update --init
+sed -i "s/target_link_libraries(bssl ssl crypto)/target_link_libraries(bssl ssl crypto rt)/g" third_party/boringssl-with-bazel/CMakeLists.txt
+mkdir -p cmake/build
+cd cmake/build
+cmake ../.. -DgRPC_INSTALL=ON -DCMAKE_BUILD_TYPE=Release -DgRPC_ABSL_PROVIDER=module -DgRPC_CARES_PROVIDER=module -DgRPC_PROTOBUF_PROVIDER=module -DgRPC_RE2_PROVIDER=module -DgRPC_SSL_PROVIDER=module -DgRPC_ZLIB_PROVIDER=module
+make -j "$(nproc)"
+sudo make install
+cd ../../..
+
+# Create dependencies folder to store all dependencies.
+mkdir -p dependencies
+export DEPS=$(pwd)/dependencies
+
+# install boost
+if ! [ -d ${BOOST_FILENAME} ]; then
+    download https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/${BOOST_FILENAME}_rc1.tar.gz
+    tar -xvf ${BOOST_FILENAME}_rc1.tar.gz
+fi
+cd ${BOOST_FILENAME}
+./bootstrap.sh --with-libraries=filesystem,system --prefix=${DEPS}/boost/${BOOST_VERSION}/
+./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC"
+cd ..
+
+cat <<'END_SKIP'
+#install Apr
+mkdir -p dependencies/apr/${APR_VERSION}
+if ! [ -d apr-${APR_VERSION} ]; then
+    download https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz
+    tar -xf apr-${APR_VERSION}.tar.gz
+fi
+cd apr-${APR_VERSION}
+# ./configure --prefix=${DEPS}/apr/${APR_VERSION} --enable-static=yes --enable-shared=no --with-pic && echo $?
+./configure --prefix=${DEPS}/apr/${APR_VERSION} --enable-debug --enable-static=yes --enable-shared=no --with-pic && echo $?
+make -j "$(nproc)"
+make install
+cd ../
+
+# install libexpat
+mkdir -p dependencies/expat/${EXPAT_VERSION}
+if ! [ -d expat-${EXPAT_VERSION} ]; then
+    download https://github.com/libexpat/libexpat/releases/download/${EXPAT_RVERSION}/expat-${EXPAT_VERSION}.tar.gz
+    tar -xf expat-${EXPAT_VERSION}.tar.gz
+fi
+cd expat-${EXPAT_VERSION}
+./configure --prefix=${DEPS}/expat/${EXPAT_VERSION} --enable-static=yes --enable-shared=no --with-pic && echo $?
+make -j "$(nproc)"
+make install
+cd ../
+
+# install Apr-util
+mkdir -p dependencies/apr-util/${APRUTIL_VERSION}
+if ! [ -d apr-util-${APRUTIL_VERSION} ]; then
+    download https://archive.apache.org/dist/apr/apr-util-${APRUTIL_VERSION}.tar.gz
+    tar -xf apr-util-${APRUTIL_VERSION}.tar.gz
+fi
+cd apr-util-${APRUTIL_VERSION}
+./configure --prefix=${DEPS}/apr-util/${APRUTIL_VERSION} --enable-static=yes --enable-shared=no --with-pic --with-apr=${DEPS}/apr/${APR_VERSION} --with-expat=${DEPS}/expat/${EXPAT_VERSION} && echo $?
+make -j "$(nproc)"
+make install
+cd ../
+END_SKIP
+
+sudo yum install -y apr-devel apr-util-devel
+
+# install m4 and perl-Data-Dumper
+sudo yum install -y m4 perl-Data-Dumper
+
+# install autoconf
+if ! [ -d autoconf-${AUTOCONF_VERSION} ]; then
+    download https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz
+    tar xzf autoconf-${AUTOCONF_VERSION}.tar.gz
+fi
+cd autoconf-${AUTOCONF_VERSION}
+./configure --prefix=/usr/
+make -j "$(nproc)"
+sudo make install
+autoconf -V
+cd ..
+
+# install automake
+if ! [ -d automake-${AUTOMAKE_VERSION} ]; then
+    download https://ftp.gnu.org/gnu/automake/automake-${AUTOMAKE_VERSION}.tar.gz
+    tar xzf automake-${AUTOMAKE_VERSION}.tar.gz
+fi
+cd automake-${AUTOMAKE_VERSION}
+./configure --prefix=/usr --libdir=/usr/lib64
+make -j "$(nproc)"
+sudo make install
+automake --version
+cd ..
+
+# install libtool
+if ! [ -d libtool-${LIBTOOL_VERSION} ]; then
+    download https://ftpmirror.gnu.org/libtool/libtool-${LIBTOOL_VERSION}.tar.gz
+    tar xzf libtool-${LIBTOOL_VERSION}.tar.gz
+fi
+cd libtool-${LIBTOOL_VERSION}
+./configure --prefix=/usr
+make -j "$(nproc)"
+sudo make install
+libtool --version
+cd ..
+
+#install log4cxx
+mkdir -p dependencies/apache-log4cxx/${LOG4CXX_VERSION}
+if ! [ -d apache-log4cxx-${LOG4CXX_VERSION} ]; then
+    download https://archive.apache.org/dist/logging/log4cxx/${LOG4CXX_VERSION}/apache-log4cxx-${LOG4CXX_VERSION}.tar.gz
+    tar -xf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz
+fi
+cd apache-log4cxx-${LOG4CXX_VERSION}
+# ./configure --prefix=${DEPS}/apache-log4cxx/${LOG4CXX_VERSION}/ --enable-static=yes --enable-shared=no --with-pic --with-apr=${DEPS}/apr/${APR_VERSION}/ --with-apr-util=${DEPS}/apr-util/${APRUTIL_VERSION}/
+./configure --prefix=${DEPS}/apache-log4cxx/${LOG4CXX_VERSION}/ --enable-static=yes --enable-shared=no --with-pic
+make -j "$(nproc)" || true
+automake --add-missing
+make install
+cd ..
+
+# install opentelemetry
+mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/lib
+mkdir -p dependencies/opentelemetry/${OPENTELEMETRY_VERSION}/include
+if ! [ -d opentelemetry-cpp/.git ]; then
+    git clone https://github.com/open-telemetry/opentelemetry-cpp
+fi
+cd opentelemetry-cpp/
+git checkout tags/v${OPENTELEMETRY_VERSION} # -b v${OPENTELEMETRY_VERSION}
+git submodule update --init --recursive
+mkdir -p build
+cd build
+cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -DWITH_OTLP=ON -DCMAKE_INSTALL_PREFIX=${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}
+cmake --build . --target all
+cd ..
+find . -name "*.so" -type f -exec cp {} ${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}/lib/ \;
+cp build/libopentelemetry_proto.a ${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}/lib
+cp -r api/include/ ${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}/
+for dir in exporters/*; do
+    if [ -d "$dir" ]; then
+        cp -rf "$dir/include" ${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}/
+    fi
+done
+cp -r sdk/include/ ${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}/
+cp -r build/generated/third_party/opentelemetry-proto/opentelemetry/proto/ ${DEPS}/opentelemetry/${OPENTELEMETRY_VERSION}/include/opentelemetry/
+cd ..
+
+# install googletest
+mkdir -p dependencies/googletest/${GTEST_VERSION}/
+download https://github.com/google/googletest/archive/refs/tags/release-${GTEST_VERSION}.tar.gz
+tar -xf release-${GTEST_VERSION}.tar.gz
+cd googletest-release-${GTEST_VERSION}/
+mkdir -p build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=${DEPS}/googletest/${GTEST_VERSION}/
+make -j "$(nproc)"
+make install
+cd ../..
+
+# install pcre
+mkdir -p dependencies/pcre/${PCRE_VERSION}/
+if ! [ -d pcre-${PCRE_VERSION} ]; then
+    download https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz
+    tar -xvf pcre-${PCRE_VERSION}.tar.gz
+fi
+cd pcre-${PCRE_VERSION}
+./configure --prefix=${DEPS}/pcre/${PCRE_VERSION} --enable-jit
+make -j "$(nproc)"
+make install
+cd ..
+
+# installing Apache and apr source code
+mkdir -p build-dependencies
+
+cat <<'END_SKIP'
+if ! [ -d build-dependencies/apr-${APR_VERSION} ]; then
+    download https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz
+    tar -xf apr-${APR_VERSION}.tar.gz
+    mv -f apr-${APR_VERSION} build-dependencies
+fi
+if ! [ -d build-dependencies/apr-util-${APRUTIL_VERSION} ]; then
+    download https://archive.apache.org/dist/apr/apr-util-${APRUTIL_VERSION}.tar.gz
+    tar -xf apr-util-${APRUTIL_VERSION}.tar.gz
+    mv -f apr-util-${APRUTIL_VERSION} build-dependencies
+fi
+END_SKIP
+if ! [ -d build-dependencies/httpd-2.2.31 ]; then
+    download http://archive.apache.org/dist/httpd/httpd-2.2.31.tar.gz
+    tar -xf httpd-2.2.31.tar.gz
+    mv -f httpd-2.2.31 build-dependencies
+fi
+if ! [ -d build-dependencies/httpd-2.4.23 ]; then
+    download http://archive.apache.org/dist/httpd/httpd-2.4.23.tar.gz
+    tar -xf httpd-2.4.23.tar.gz
+    mv -f httpd-2.4.23 build-dependencies
+fi
+
+# build webserver module
+./gradlew assembleWebServerModule
+cd build
+tar -xf opentelemetry-webserver-sdk-x64-linux.tgz
+sudo rm -rf /opt/opentelemetry-webserver-sdk
+sudo mv -f opentelemetry-webserver-sdk /opt/
+cd ../
+sudo cp opentelemetry_module.conf /opt/IBM/HTTPServer/conf/
+# printf '\n# OpenTelemetry\nInclude conf/opentelemetry_module.conf\n' | sudo tee --append /etc/httpd/conf/httpd.conf >/dev/null
+cd /opt/opentelemetry-webserver-sdk
+./install.sh
