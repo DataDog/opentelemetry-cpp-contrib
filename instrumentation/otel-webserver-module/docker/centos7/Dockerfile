@@ -254,9 +254,9 @@ RUN mkdir build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.2.31.tar.gz \
     && tar -xf httpd-2.2.31.tar.gz \
     && mv -f httpd-2.2.31 build-dependencies \
-    && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.23.tar.gz \
-    && tar -xf httpd-2.4.23.tar.gz \
-    && mv -f httpd-2.4.23 build-dependencies
+    && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.12.tar.gz \
+    && tar -xf httpd-2.4.12.tar.gz \
+    && mv -f httpd-2.4.12 build-dependencies
 
 # install nginx
 # RUN wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
@@ -299,7 +299,7 @@ RUN cd /otel-webserver-module/build \
 RUN rm -rf grpc && rm -rf autoconf-${AUTOCONF_VERSION} && rm -rf automake-${AUTOMAKE_VERSION} && rm -rf cmake-${CMAKE_VERSION}-linux-x86_64 \
     && rm -rf libtool-${LIBTOOL_VERSION} && rm -rf Python-${PYTHON_VERSION} \
     && rm -f apr-${APR_VERSION}.tar.gz && rm -f apr-util-${APRUTIL_VERSION}.tar.gz \
-    && rm -f httpd-2.2.31.tar.gz && rm -f httpd-2.4.23.tar.gz
+    && rm -f httpd-2.2.31.tar.gz && rm -f httpd-2.4.12.tar.gz
 
 COPY entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["entrypoint.sh"]

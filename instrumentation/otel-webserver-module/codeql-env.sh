@@ -143,12 +143,12 @@ mkdir -p /build-dependencies \
     && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.2.31.tar.gz \
     && tar -xf httpd-2.2.31.tar.gz \
     && mv -f httpd-2.2.31 /build-dependencies \
-    && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.23.tar.gz \
-    && tar -xf httpd-2.4.23.tar.gz \
-    && mv -f httpd-2.4.23 /build-dependencies
+    && wget --no-check-certificate http://archive.apache.org/dist/httpd/httpd-2.4.12.tar.gz \
+    && tar -xf httpd-2.4.12.tar.gz \
+    && mv -f httpd-2.4.12 /build-dependencies
 
 rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar.gz \
-    && rm -rf httpd-2.4.23.tar.gz && rm -rf httpd-2.2.31.tar.gz \
+    && rm -rf httpd-2.4.12.tar.gz && rm -rf httpd-2.2.31.tar.gz \
     && rm -rf grpc \
     && rm -rf apr-${APR_VERSION} && rm -rf apr-${APR_VERSION}.tar.gz
 

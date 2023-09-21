@@ -290,10 +290,10 @@ if ! [ -d build-dependencies/httpd-2.2.31 ]; then
     tar -xf httpd-2.2.31.tar.gz
     mv -f httpd-2.2.31 build-dependencies
 fi
-if ! [ -d build-dependencies/httpd-2.4.23 ]; then
-    download http://archive.apache.org/dist/httpd/httpd-2.4.23.tar.gz
-    tar -xf httpd-2.4.23.tar.gz
-    mv -f httpd-2.4.23 build-dependencies
+if ! [ -d build-dependencies/httpd-2.4.12 ]; then
+    download http://archive.apache.org/dist/httpd/httpd-2.4.12.tar.gz
+    tar -xf httpd-2.4.12.tar.gz
+    mv -f httpd-2.4.12 build-dependencies
 fi
 
 # build webserver module

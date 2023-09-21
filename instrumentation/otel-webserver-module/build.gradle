@@ -51,7 +51,7 @@ project.ext {
     sharedLibraryExt = 'so'
     
     apache22Version = "2.2.31"
-    apache24Version = "2.4.23"
+    apache24Version = "2.4.12"
     nginxSupportedVersions=props.get("nginxSupportedVersions").split(',')
 
     libraryStageDir = "${platBuildDir}/opentelemetry-webserver-sdk"
