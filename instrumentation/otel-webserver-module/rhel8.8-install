@@ -14,9 +14,11 @@ OPENTELEMETRY_VERSION="1.2.0"
 BOOST_VERSION="1.75.0"
 BOOST_FILENAME="boost_1_75_0"
 # APR_VERSION="1.7.0"
+APR_VERSION="1.5.1"
 EXPAT_VERSION="2.3.0"
 EXPAT_RVERSION="R_2_3_0"
 # APRUTIL_VERSION="1.6.1"
+APRUTIL_VERSION="1.5.2"
 AUTOCONF_VERSION="2.68"
 LIBTOOL_VERSION="2.4.6"
 LOG4CXX_VERSION="0.11.0"
@@ -129,7 +131,6 @@ cd ${BOOST_FILENAME}
 ./b2 install define=BOOST_ERROR_CODE_HEADER_ONLY link=static threading=multi cxxflags="-fvisibility=hidden -fPIC" cflags="-fvisibility=hidden -fPIC"
 cd ..
 
-cat <<'END_SKIP'
 #install Apr
 mkdir -p dependencies/apr/${APR_VERSION}
 if ! [ -d apr-${APR_VERSION} ]; then
@@ -166,7 +167,6 @@ cd apr-util-${APRUTIL_VERSION}
 make -j "$(nproc)"
 make install
 cd ../
-END_SKIP
 
 sudo yum install -y apr-devel apr-util-devel
 
@@ -275,7 +275,6 @@ cd ..
 # installing Apache and apr source code
 mkdir -p build-dependencies
 
-cat <<'END_SKIP'
 if ! [ -d build-dependencies/apr-${APR_VERSION} ]; then
     download https://archive.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz
     tar -xf apr-${APR_VERSION}.tar.gz
@@ -286,7 +285,6 @@ if ! [ -d build-dependencies/apr-util-${APRUTIL_VERSION} ]; then
     tar -xf apr-util-${APRUTIL_VERSION}.tar.gz
     mv -f apr-util-${APRUTIL_VERSION} build-dependencies
 fi
-END_SKIP
 if ! [ -d build-dependencies/httpd-2.2.31 ]; then
     download http://archive.apache.org/dist/httpd/httpd-2.2.31.tar.gz
     tar -xf httpd-2.2.31.tar.gz
