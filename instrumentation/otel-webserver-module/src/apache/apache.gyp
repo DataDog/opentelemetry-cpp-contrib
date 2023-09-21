@@ -11,8 +11,8 @@
           '../../include/apache',
           '$(APACHE24_INCLUDE_DIR)',
           '$(APACHE24_INCLUDE_DIR)/../os/unix',
-          '$(ANSDK_DIR)/apr/1.7.0/include/apr-1',
-          '$(ANSDK_DIR)/apr-util/1.6.1/include/apr-1',
+          '$(ANSDK_DIR)/apr/1.5.1/include/apr-1',
+          '$(ANSDK_DIR)/apr-util/1.5.2/include/apr-1',
         ],
 
         'sources': [
@@ -87,8 +87,8 @@
           '../../include/apache',
           '$(APACHE22_INCLUDE_DIR)',
           '$(APACHE22_INCLUDE_DIR)/../os/unix',
-          '$(ANSDK_DIR)/apr/1.7.0/include/apr-1',
-          '$(ANSDK_DIR)/apr-util/1.6.1/include/apr-1',
+          '$(ANSDK_DIR)/apr/1.5.1/include/apr-1',
+          '$(ANSDK_DIR)/apr-util/1.5.2/include/apr-1',
         ],
         'sources': [
           'ApacheTracing.cpp',

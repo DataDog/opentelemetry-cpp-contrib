@@ -49,7 +49,10 @@ project.ext {
 
     scriptExt = 'sh'
     sharedLibraryExt = 'so'
-    
+
+
+    aprVersion = "1.5.1"
+    aprutilVersion = "1.5.2"
     apache22Version = "2.2.31"
     apache24Version = "2.4.12"
     nginxSupportedVersions=props.get("nginxSupportedVersions").split(',')
@@ -224,7 +227,7 @@ task assembleLibrary(type: Tar) {
 // Apache
 
 task extractApache(type: Copy) {
-    from "build-dependencies" 
+    from "build-dependencies"
     into buildDir
 }
 
@@ -245,22 +248,22 @@ task bundleAprSources {
         }
 
         copy {
-            from "${buildDir}/apr-1.7.0"
+            from "${buildDir}/apr-${aprVersion}"
             into "${platBuildDir}/httpd-${apache22Version}/srclib/apr"
         }
 
         copy {
-            from "${buildDir}/apr-1.7.0"
+            from "${buildDir}/apr-${aprVersion}"
             into "${platBuildDir}/httpd-${apache24Version}/srclib/apr"
         }
 
         copy {
-            from "${buildDir}/apr-util-1.6.1"
+            from "${buildDir}/apr-util-${aprutilVersion}"
             into "${platBuildDir}/httpd-${apache22Version}/srclib/apr-util"
         }
 
         copy {
-            from "${buildDir}/apr-util-1.6.1"
+            from "${buildDir}/apr-util-${aprutilVersion}"
             into "${platBuildDir}/httpd-${apache24Version}/srclib/apr-util"
         }
     }

@@ -29,10 +29,10 @@ GRPC_VERSION="1.36.4"
 OPENTELEMETRY_VERSION="1.2.0"
 BOOST_VERSION="1.75.0"
 BOOST_FILENAME="boost_1_75_0"
-APR_VERSION="1.7.0"
+APR_VERSION="1.5.1"
 EXPAT_VERSION="2.3.0"
 EXPAT_RVERSION="R_2_3_0"
-APRUTIL_VERSION="1.6.1"
+APRUTIL_VERSION="1.5.2"
 LOG4CXX_VERSION="0.11.0"
 GTEST_VERSION="1.10.0"
 PCRE_VERSION="8.44"
@@ -104,7 +104,7 @@ mkdir -p /dependencies/apr-util/${APRUTIL_VERSION} \
     && wget https://archive.apache.org/dist/apr/apr-util-${APRUTIL_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apr-util-${APRUTIL_VERSION}.tar.gz \
     && cd apr-util-${APRUTIL_VERSION} \
-    && ./configure --prefix=/dependencies/apr-util/${APRUTIL_VERSION} --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.7.0 --with-expat=/dependencies/expat/2.3.0 && echo $? \
+    && ./configure --prefix=/dependencies/apr-util/${APRUTIL_VERSION} --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.5.1 --with-expat=/dependencies/expat/2.3.0 && echo $? \
     && make -j 6 \
     && make install \
     && cd ../ && rm -rf apr-util-${APRUTIL_VERSION} && rm -rf apr-util-${APRUTIL_VERSION}.tar.gz
@@ -115,7 +115,7 @@ mkdir -p /dependencies/apache-log4cxx/${LOG4CXX_VERSION} \
     && wget https://archive.apache.org/dist/logging/log4cxx/${LOG4CXX_VERSION}/apache-log4cxx-${LOG4CXX_VERSION}.tar.gz --no-check-certificate \
     && tar -xf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
     && cd apache-log4cxx-${LOG4CXX_VERSION} \
-    && ./configure --prefix=/dependencies/apache-log4cxx/${LOG4CXX_VERSION}/ --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.7.0/ --with-apr-util=/dependencies/apr-util/1.6.1/ && echo $? \
+    && ./configure --prefix=/dependencies/apache-log4cxx/${LOG4CXX_VERSION}/ --enable-static=yes --enable-shared=no --with-pic --with-apr=/dependencies/apr/1.5.1/ --with-apr-util=/dependencies/apr-util/1.5.2/ && echo $? \
     && make -j 6 ; echo 0 \
     && automake --add-missing \
     && make install \

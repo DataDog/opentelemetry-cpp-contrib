@@ -24,8 +24,8 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
 | Apache-log4cxx                                 | 0.11.0          |
-| Apr                                            | 1.7.0           |
-| Apr-util                                       | 1.6.1           |
+| Apr                                            | 1.5.1           |
+| Apr-util                                       | 1.5.2           |
 | Expat                                          | 2.3.0           |
 | Boost                                          | 1.75.0          |
 | Opentelemetry - C++ SDK                        | 1.2.0      |
@@ -36,8 +36,8 @@ Monitoring individual modules is crucial to the instrumentation of Apache web se
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
 | Httpd                                          | 2.4.12, 2.2.31          |
-| Apr                                            | 1.7.0           |
-| Apr-util                                       | 1.6.1           |
+| Apr                                            | 1.5.1           |
+| Apr-util                                       | 1.5.2           |
 
 ### Configuration
 | Configuration Directives                       |  Default Values |  Remarks                                   |
@@ -138,8 +138,8 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
 | Apache-log4cxx                                 | 0.11.0          |
-| Apr                                            | 1.7.0           |
-| Apr-util                                       | 1.6.1           |
+| Apr                                            | 1.5.1           |
+| Apr-util                                       | 1.5.2           |
 | Expat                                          | 2.3.0           |
 | Boost                                          | 1.75.0          |
 | Opentelemetry - C++ SDK                        | 1.2.0           |
@@ -151,8 +151,8 @@ Currently, Nginx Webserver module monitores some fixed set of modules, which get
 | Library                                        | Present Version |
 | ---------------------------------------------- | -----------     |
 | Nginx                                          | 1.22.0, 1.23.0,1.23.1          |
-| Apr                                            | 1.7.0           |
-| Apr-util                                       | 1.6.1           |
+| Apr                                            | 1.5.1           |
+| Apr-util                                       | 1.5.2           |
 
 ### Configuration
 | Configuration Directives                       |  Default Values |  Remarks                                   |

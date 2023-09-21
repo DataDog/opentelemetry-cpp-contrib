@@ -10,8 +10,8 @@
       '$(ANSDK_DIR)/googletest/1.10.0/include',
       '$(ANSDK_DIR)/opentelemetry/$(CPP_SDK_VERSION)/include/',
       '$(ANSDK_DIR)/apache-log4cxx/0.11.0/include',
-      '$(ANSDK_DIR)/apr/1.7.0/include',
-      '$(ANSDK_DIR)/apr-util/1.6.1/include',
+      '$(ANSDK_DIR)/apr/1.5.1/include',
+      '$(ANSDK_DIR)/apr-util/1.5.2/include',
       '$(BOOST_INCLUDE)'
     ],
 
@@ -45,8 +45,8 @@
           '$(GTEST_LIB_DIR)/libgtest.a',
           '$(GTEST_LIB_DIR)/libgtest_main.a',
           '$(ANSDK_DIR)/apache-log4cxx/0.11.0/lib/liblog4cxx.a',
-          '$(ANSDK_DIR)/apr/1.7.0/lib/libapr-1.a',
-          '$(ANSDK_DIR)/apr-util/1.6.1/lib/libaprutil-1.a',
+          '$(ANSDK_DIR)/apr/1.5.1/lib/libapr-1.a',
+          '$(ANSDK_DIR)/apr-util/1.5.2/lib/libaprutil-1.a',
           '$(ANSDK_DIR)/expat/2.3.0/lib/libexpat.a',
           '$(ANSDK_DIR)/opentelemetry/$(CPP_SDK_VERSION)/lib/libopentelemetry_common.so',
           '$(ANSDK_DIR)/opentelemetry/$(CPP_SDK_VERSION)/lib/libopentelemetry_resources.so',
