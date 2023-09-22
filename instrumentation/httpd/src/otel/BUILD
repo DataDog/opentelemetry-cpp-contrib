@@ -7,14 +7,15 @@ cc_library(
     srcs = glob(["*.cpp"]),
     hdrs = glob(["*.h"]),
     copts = [
-        "-I/usr/include/apache2",
-        "-I/usr/include/apr-1.0",
+        "-Iexternal/IHS",
     ],
     deps = [
+        "@IHS//:headers",
         "@io_opentelemetry_cpp//api",
         "@io_opentelemetry_cpp//exporters/ostream:ostream_span_exporter",
         "@io_opentelemetry_cpp//exporters/otlp:otlp_exporter",
         "@io_opentelemetry_cpp//sdk/src/trace",
     ],
     alwayslink = 1,
+    linkstatic = 1,
 )

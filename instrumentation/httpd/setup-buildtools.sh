@@ -1,26 +1,15 @@
 #!/bin/sh
 
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -y
-apt-get install -qq automake
-apt-get install -qq libtool-bin
-apt-get install -qq curl
-apt-get install -qq libcurl4-openssl-dev
-apt-get install -qq zlib1g-dev
-apt-get install -qq git
-apt-get install -qq build-essential
-apt-get install -qq libssl-dev
-apt-get install -qq libsqlite3-dev
-# Stock sqlite may be too old
-#apt install libsqlite3-dev
-apt-get install -qq wget
+PS4='@ECHO@ line $LINENO: '
+set -x
+set -e
 
-# bazelisk is not in apt repository
-BAZELISK_VERSION=v1.7.4
+sudo yum group install -y "Development Tools"
+sudo yum install -y automake libtool curl libcurl-devel zlib-devel git openssl-devel wget # apr-devel
 
-wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/$BAZELISK_VERSION/bazelisk-linux-amd64
-chmod +x /usr/local/bin/bazel
+# BAZELISK_VERSION=v1.7.4
+BAZELISK_VERSION=v1.18.0
 
-
-## Change owner from root to current dir owner
-chown -R `stat . -c %u:%g` *
+wget -O /tmp/bazelisk https://github.com/bazelbuild/bazelisk/releases/download/$BAZELISK_VERSION/bazelisk-linux-amd64
+sudo mv /tmp/bazelisk /usr/local/bin/
+chmod a+rx /usr/local/bin/bazelisk

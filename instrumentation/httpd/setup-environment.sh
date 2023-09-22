@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
+PS4='@ECHO@ line $LINENO: '
+set -x
 set -e
 
-apt-get install --no-install-recommends --no-install-suggests -y \
-                apache2 \
-                apache2-dev
+sudo yum update -y
+sudo yum install -y httpd-devel
