@@ -36,7 +36,7 @@ new_local_repository(
 package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "headers",
-    hdrs = glob(["**/*"])
+    hdrs = glob(include=["*.h"], exclude=["mod_proxy.h"])
 )
 """
 )

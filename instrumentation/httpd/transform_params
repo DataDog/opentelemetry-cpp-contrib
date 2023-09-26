@@ -1,0 +1,29 @@
+#!/bin/sh
+
+reading_output_flag=no # or "yes"
+
+while read -r param; do
+    if [ "$reading_output_flag" = 'yes' ]; then
+        reading_output_flag=no
+        printf '%s\n' '-o'
+        printf '%s\n' 'otel.so' # into the current directory
+        continue
+    fi
+
+    case "$param" in
+    -o)
+        reading_output_flag=yes ;;
+    -lstdc++)
+        # printf '%s\n' '-Bstatic'
+        # printf '%s\n' '-lstdc++'
+        # printf '%s\n' '-Bdynamic'
+        ;;
+    -fuse-ld=gold)
+        ;;
+    *)
+        printf '%s\n' "$param"
+    esac
+done
+
+printf '%s\n' '-static-libstdc++'
+printf '%s\n' '-static-libgcc'
