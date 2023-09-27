@@ -4,6 +4,8 @@ PS4='@ECHO@ line $LINENO: '
 set -x
 set -e
 
+cd "$(dirname "$0")/../../../"
+
 #     --nostart_end_lib is an undocumented bazel build option that allows the
 #     generated compiler command line flags to be understood by the default
 #     linker, as opposed to requiring a more modern linker like gold.
