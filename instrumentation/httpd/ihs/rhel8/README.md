@@ -131,7 +131,7 @@ production environment, it's more likely that the built `otel.so` and config
 
 ```console
 [david@rhel8 httpd]$ pwd
-/home/david/src/opentelemetry-cpp-contrib/instrumentation/httpd
+/home/david/src/opentelemetry-cpp-contrib/instrumentation/httpd/ihs/rhel8
 
 [david@rhel8 rhel8]$ bin/install-build-deps
 @ECHO@ line 5: set -e
