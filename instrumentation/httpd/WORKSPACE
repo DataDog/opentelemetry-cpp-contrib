@@ -28,3 +28,15 @@ grpc_extra_deps()
 load("@upb//bazel:repository_defs.bzl", "bazel_version_repository")
 
 bazel_version_repository(name = "upb_bazel_version")
+
+new_local_repository(
+    name = "IHS",
+    path = "/opt/IBM/HTTPServer/include",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "headers",
+    hdrs = glob(include=["*.h"], exclude=["mod_proxy.h"])
+)
+"""
+)

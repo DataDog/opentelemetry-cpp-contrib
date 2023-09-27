@@ -1,0 +1,25 @@
+#!/bin/sh
+
+PS4='@ECHO@ line $LINENO: '
+set -x
+set -e
+
+sudo yum group install -y "Development Tools"
+sudo yum install -y automake libtool curl libcurl-devel zlib-devel git openssl-devel wget
+
+# In order to statically link the C++ standard library, we need a static version
+# of that library. On RHEL 8, that's only available via the "CodeReady Linux
+# Builder" repository.
+sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
+sudo yum install -y libstdc++-static
+
+# bazelisk is a wrapper around bazel, which is a build tool. bazelisk can be
+# invoked as if it were bazel, but additionally bazelisk will ensure that a
+# version of bazel is installed that supports the current directory's build
+# configuration.
+if ! command -v bazelisk >/dev/null; then
+    BAZELISK_VERSION=v1.18.0
+    wget -O /tmp/bazelisk https://github.com/bazelbuild/bazelisk/releases/download/$BAZELISK_VERSION/bazelisk-linux-amd64
+    sudo mv /tmp/bazelisk /usr/local/bin/
+    chmod a+rx /usr/local/bin/bazelisk
+fi

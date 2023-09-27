@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# When bazel is done building the Apache module, the resulting file will be
+# "bazel-bin/otel.so".
+#
+# That file is linked by passing as command line parameters to "gcc" the
+# contents of "bazel-bin/otel.so-2.params".
+#
+# The resulting "bazel-bin/otel.so" dynamically links libstdc++ and libgcc.
+#
+# It would be preferable not to require that the C++ standard library and GCC
+# are installed on the production system.
+#
+# In order to instead statically link libstdc++ and libgcc into the Apache
+# module, we need to link using g++ (instead of gcc). Additionally, we must
+# instruct g++ to use the default linker (by not specifying an alternative), we
+# must not instruct the linker to dynamically link libstdc++, and we must not
+# include any command line arguments that the default linker does not
+# understand (this is covered by "--nostart_end_lib" in build-module).
+#
+# This script reads gcc command line arguments as lines from standard input, and
+# prints to standard output modified command line arguments that satisfy the
+# paragraph above.
+
+# The output path for the .so involves two command line parameters:
+#
+#     -o output/path/to/otel.so
+#
+# The reading_output_flag variable is the state needed to parse the above.
+reading_output_flag=no # or "yes"
+
+while read -r param; do
+    if [ "$reading_output_flag" = 'yes' ]; then
+        reading_output_flag=no
+        printf '%s\n' '-o'
+        printf '%s\n' 'otel.so' # into the current directory
+        continue
+    fi
+
+    case "$param" in
+    -o)
+        reading_output_flag=yes ;;
+    -lstdc++)
+        ;;
+    -fuse-ld=gold)
+        ;;
+    *)
+        printf '%s\n' "$param"
+    esac
+done
+
+printf '%s\n' '-static-libstdc++'
+printf '%s\n' '-static-libgcc'
