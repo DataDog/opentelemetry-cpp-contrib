@@ -5,8 +5,7 @@ set -x
 set -e
 
 # Go to the httpd/ directory.
-bin=$(dirname "$0")
-cd "$bin/../../../"
+cd "$(dirname "$0")/../../../"
 
 #     --nostart_end_lib is an undocumented bazel build option that allows the
 #     generated compiler command line flags to be understood by the default
@@ -30,7 +29,7 @@ cd "$bin/../../../"
 bazelisk build --nostart_end_lib --verbose_failures --subcommands -c opt :all
 
 # Now redo the final linking step, but use "g++" as the linking driver instead
-# of "gcc". This is what it took to get the "-static-libstdc++" and
+# of "gcc". This is what it takes to get the "-static-libstdc++" and
 # "-static-libgcc" options to work.
 # The resulting .so will be under httpd/ instead of under httpd/bazel-bin/
-<bazel-out/k8-opt/bin/otel.so-2.params "$bin"/transform-params | tr '\n' '\0' | xargs -0 g++
+<bazel-out/k8-opt/bin/otel.so-2.params ihs/rhel8/bin/transform-params | tr '\n' '\0' | xargs -0 g++
