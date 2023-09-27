@@ -256,14 +256,14 @@ Last Updated: 2023-04-26
 
 The system was installed with an admin user ("david") and a root password.
 
-To enable Red Hat's package repositories, register the system using the 'subscription-manager':
+To enable Red Hat's package repositories, register the system using the `subscription-manager`:
 ```console
 $ subscription-manager register --username <REDACTED> --password <REDACTED> --auto-attach
 ```
 
 `subscription-manager` accepts the same credentials as the Red Hat website.
 
-Then packages repositories can be updated:
+Then package repositories can be updated:
 ```console
 $ sudo yum update -y
 ```
