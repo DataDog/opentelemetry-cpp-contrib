@@ -186,7 +186,7 @@ In `/opt/IBM/HTTPServer/logs/access_log`, I see:
 ::1 - - [27/Sep/2023:12:03:47 -0400] "GET /self/self/self HTTP/1.1" 200 2069 1408 "-" (mod_proxy.c/0/handler) MS=1 +
 ```
 
-A few seconds later, in the Datadog UI under `APM > Tracer`, I search for
+A few seconds later, in the Datadog UI under `APM > Traces`, I search for
 `service:ihs-demo` and find:
 
 ![trace search results](screenshots/trace-search.png)
