@@ -43,14 +43,17 @@ again copied and modified. See the comments near the top of `mod_proxy.h` for a
 description of the changes.
 
 If the above `bin/*` scripts succeed, then the result will be a file `otel.so`
-in [httpd/][1].
+in [httpd/][1], i.e. in the directory `instrumentation/httpd` relative to this
+repository's root.
 
 Installing the Module
 ---------------------
 This section assumes that IBM HTTP Server is installed on the production system
 with the prefix `/opt/IBM/HTTPServer`.
 
-Copy `otel.so` into `/opt/IBM/HTTPServer/modules`.
+Copy `otel.so` into `/opt/IBM/HTTPServer/modules`. The build places `otel.so`
+into the following path relative to this repository's root:
+`instrumentation/httpd/otel.so`.
 
 Copy [otel.conf][7] into `/opt/IBM/HTTPServer/conf`. `otel.conf` loads the
 module (`otel.so`) and contains OpenTelemetry-specific configuration directives.
@@ -60,6 +63,15 @@ Add the following to `/opt/IBM/HTTPServer/conf/httpd.conf`:
 ```apache
 # OpenTelemetry tracing
 Include conf/otel.conf
+```
+
+Modify `/opt/IBM/HTTPServer/conf/httpd.conf`, if necessary, so that both the
+`mod_proxy.so` and `mod_proxy_http.so` modules are loaded. A default
+installation of IBM HTTP Server might have these lines commented out. Make sure
+that they are not commented out:
+```apache
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
 ```
 
 Start (or restart) the server.
