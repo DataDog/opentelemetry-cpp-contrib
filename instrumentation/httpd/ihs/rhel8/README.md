@@ -43,8 +43,7 @@ again copied and modified. See the comments near the top of `mod_proxy.h` for a
 description of the changes.
 
 If the above `bin/*` scripts succeed, then the result will be a file `otel.so`
-in [httpd/][1], i.e. in the directory `instrumentation/httpd` relative to this
-repository's root.
+in the `rhel8/` directory (the same directory as this readme file).
 
 Installing the Module
 ---------------------
@@ -52,8 +51,13 @@ This section assumes that IBM HTTP Server is installed on the production system
 with the prefix `/opt/IBM/HTTPServer`.
 
 Copy `otel.so` into `/opt/IBM/HTTPServer/modules`. The build places `otel.so`
-into the following path relative to this repository's root:
-`instrumentation/httpd/otel.so`.
+into this directory, i.e. `rhel8/`. For example:
+```console
+$ pwd
+/home/david/opentelemetry-cpp-contrib/instrumentation/httpd/ihs/rhel8
+
+$ sudo cp otel.so /opt/IBM/HTTPServer/modules/
+```
 
 Copy [otel.conf][7] into `/opt/IBM/HTTPServer/conf`. `otel.conf` loads the
 module (`otel.so`) and contains OpenTelemetry-specific configuration directives.
@@ -168,7 +172,7 @@ INFO: Found 1 target...
 [david@rhel8 rhel8]$ sudo cp otel.conf /opt/IBM/HTTPServer/conf
 [sudo] password for david:
 
-[david@rhel8 rhel8]$ sudo cp ../../otel.so /opt/IBM/HTTPServer/modules
+[david@rhel8 rhel8]$ sudo cp otel.so /opt/IBM/HTTPServer/modules
 
 [david@rhel8 rhel8]$ sudo tee --append /opt/IBM/HTTPServer/conf/httpd.conf <<'END_CONF'
 > # OpenTelemetry tracing

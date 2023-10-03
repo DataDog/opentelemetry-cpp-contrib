@@ -22,6 +22,10 @@
 # prints to standard output modified command line arguments that satisfy the
 # paragraph above.
 
+# This script requires one command line argument: the path to the directory
+# where the resulting `otel.so` will be written.
+output_dir="$1"
+
 # The output path for the .so involves two command line parameters:
 #
 #     -o output/path/to/otel.so
@@ -33,7 +37,7 @@ while read -r param; do
     if [ "$reading_output_flag" = 'yes' ]; then
         reading_output_flag=no
         printf '%s\n' '-o'
-        printf '%s\n' 'otel.so' # into the current directory
+        printf '%s/otel.so\n' "$output_dir"
         continue
     fi
 

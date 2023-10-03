@@ -32,4 +32,4 @@ bazelisk build --nostart_end_lib --verbose_failures --subcommands -c opt :all
 # of "gcc". This is what it takes to get the "-static-libstdc++" and
 # "-static-libgcc" options to work.
 # The resulting .so will be under httpd/ instead of under httpd/bazel-bin/
-<bazel-out/k8-opt/bin/otel.so-2.params ihs/rhel8/bin/transform-params | tr '\n' '\0' | xargs -0 g++
+<bazel-out/k8-opt/bin/otel.so-2.params ihs/rhel8/bin/transform-params 'ihs/rhel8' | tr '\n' '\0' | xargs -0 g++
